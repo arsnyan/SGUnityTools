@@ -1,10 +1,11 @@
 # SGUnityTools
 Uses Radfordhound's HedgeLib for importing lights, materials
 
-# Tools
+## Tools
 Lightmap UV generator (in case if you have in-editor combined objects with no external mesh files)
 
 Object Batching tool in context menu (it just uses StaticBatchingUtility and parents all objects to active one)
+Object Instancing tool. Can be applied to a parent of game objects. After which it sorts all objects and instances them by applying same mesh to all similar surfaces. It uses these parameters: name of the object (it's numeration), vertex count and pivot point. So, if you have different objects under one naming condition, it will correctly instance them by alphabetic order. Though if something interrupts it, it starts new instancing order with another individual mesh. Can be undo.
 
 Screenshot tool - it just makes a screenshot for previewing a game in a higher resolution
 
@@ -15,7 +16,7 @@ SG material importer - a script to import most standard materials from Sonic Gen
 
 UV Swapper - in case if you've imported lightmap uv set in UV2 instead of UV1. This mostly happen with SonicGLVL generated models.
 
-# How to use
+## How to use
 Firstly, add HedgeLib.dll to your project (more in Unity Docs). To install scripts, add them into any "Editor" folder in your Assets/ folder. Keep in mind it has namespaces inside every class, but you can delete it.
 
 Lightmap UV generator, Object Batching tool and UV Swapper is available in context menu for any game object selection.
