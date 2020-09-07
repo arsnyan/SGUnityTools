@@ -9,12 +9,24 @@ namespace SonicUnleashed.Editor
 {
     public class MenuBatcher : MonoBehaviour
     {
+        public static float DistancesToVerts(MeshFilter filter)
+        {
+            var mesh = filter.sharedMesh;
+
+            var distance = 1f;
+            var localPosition = filter.transform.localPosition;
+            distance = Vector3.Distance(localPosition, mesh.vertices[0] + localPosition);
+            return distance;
+        }
+        
         [MenuItem("GameObject/Batch objects", false, 0)]
         public static void BatchObjects(MenuCommand command)
         {
             var selected = Selection.gameObjects;
             var first = selected[0];
             
+            // ReSharper disable once CoVariantArrayConversion
+            Undo.RegisterCompleteObjectUndo(selected, "Undo instancing");
             StaticBatchingUtility.Combine(selected, first);
             for (int i = 1; i < selected.Length; i++)
                 selected[i].transform.SetParent(first.transform);
@@ -65,27 +77,37 @@ namespace SonicUnleashed.Editor
                 .ToDictionary(
                     k => k.Key, 
                     v => v.Value
-                    );
+                );
             
             var previousPair = dict.Keys.First();
-            var instancedMesh = dict.Values.First().sharedMesh;
+            var instancedMesh = dict.Values.First();
+            
             foreach (var keyValuePair in dict)
             {
-                var name = Regex.Match(keyValuePair.Key.Key, @"^[^0-9]*").Value.Trim();
+                var name = Regex.Match(
+                    keyValuePair.Key.Key, 
+                    @"^[^0-9]*"
+                ).Value.Trim();
+                
                 var vertexCount = keyValuePair.Value.sharedMesh.vertexCount;
-                if (vertexCount.Equals(previousPair.Value) && previousPair.Key.Contains(name))
+                
+                if (
+                    vertexCount.Equals(previousPair.Value) 
+                    && previousPair.Key.Contains(name) 
+                    && Math.Abs(
+                        DistancesToVerts(instancedMesh) - DistancesToVerts(keyValuePair.Value)
+                    ) < 1f
+                )
                 {
                     var dictFilter = dict[keyValuePair.Key];
-                    dictFilter.sharedMesh = instancedMesh;
+                    dictFilter.sharedMesh = instancedMesh.sharedMesh;
                 }
                 else
                 {
-                    instancedMesh = dict[keyValuePair.Key].sharedMesh;
+                    instancedMesh = dict[keyValuePair.Key];
                 }
 
-                var currPair = new KeyValuePair<String, int>(name, vertexCount);
-
-                previousPair = currPair;
+                previousPair = new KeyValuePair<String, int>(name, vertexCount);
             }
         }
     }
